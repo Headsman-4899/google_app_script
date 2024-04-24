@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <title>Простое приложение для учета расходов</title>
+</head>
+<body>
+<h1>Мое приложение для учета расходов</h1>
+<div>
+    <input type="date" id="dateInput">
+    <select id="categorySelect">
+        <option value="Продукты">Продукты</option>
+        <option value="Транспорт">Транспорт</option>
+        <option value="Жилье">Жилье</option>
+        <option value="Развлечения">Развлечения</option>
+    </select>
+    <input type="number" id="amountInput" placeholder="Сумма">
+    <button onclick="addExpense()">Добавить расход</button>
+    <button onclick="updateStatistics()">Обновить статистику</button>
+</div>
+<ul id="expenseList"></ul>
+<p id="totalExpenses"></p>
+<p id="maxExpenseDay"></p>
+<p id="minExpenseDay"></p>
+
+<script>
+    function addExpense() {
+        var date = document.getElementById("dateInput").value.trim();
+        var category = document.getElementById("categorySelect").value.trim();
+        var amount = parseFloat(document.getElementById("amountInput").value.trim());
+        if (date !== "" && category !== "" && !isNaN(amount)) {
+            google.script.run.withSuccessHandler(function() {
+                updateStatistics(); // Обновляем статистику после успешного добавления расхода
+                document.getElementById("dateInput").value = "";
+                document.getElementById("categorySelect").selectedIndex = 0;
+                document.getElementById("amountInput").value = "";
+            }).addExpense(date, category, amount);
+        } else {
+            alert("Введите корректные данные для расхода!");
+        }
+    }
+
+    function updateStatistics() {
+        google.script.run.withSuccessHandler(function(stats) {
+            document.getElementById("totalExpenses").textContent = 'Общая сумма расходов: ' + stats.total + ' тг.';
+            document.getElementById("maxExpenseDay").textContent = 'Самый большой расход: ' + stats.max.amount + ' тг. (' + stats.max.date + ')';
+            document.getElementById("minExpenseDay").textContent = 'Самый маленький расход: ' + stats.min.amount + ' тг. (' + stats.min.date + ')';
+        }).getStatistics();
+    }
+</script>
+</body>
+</html>
